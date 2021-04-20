@@ -1,0 +1,79 @@
+name: 'JFramework CI'
+
+# 定义脚本触发方式
+on:
+  #  每小时执行一次
+  #  schedule:
+  #    - cron: '0 * * * *'
+
+  # release事件触发
+  release:
+    types: [published]
+
+#  push:
+#    # master分支下面的文件推送时触发工作流
+#    branches:
+#      - master
+#    # 推送到v1tag时，将运行此工作流
+#    #    tags:
+#    #      - v1
+#    # file paths to consider in the event. Optional; defaults to all.
+#    paths:
+#      - 'gradle.properties'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      PBINTRAYUSER: ${{secrets.PBINTRAYUSER}}
+      PBINTRAYAPIKEY: ${{secrets.PBINTRAYAPIKEY}}
+
+    # 配置构建矩阵
+    #    runs-on: ${{ matrix.os }}
+    #    strategy:
+    #      matrix:
+    #        os: [macos-latest, windows-latest, ubuntu-latest]
+    #        node: [6, 8, 10]
+    #    steps:
+    #      # Configures the node version used on GitHub-hosted runners
+    #      - uses: actions/setup-node@v1
+    #        with:
+    #          # The Node.js version to configure
+    #          node-version: ${{ matrix.node }}
+
+    steps:
+      #      - name: 'echo start'
+      #          run: echo $ECHO_LOG
+      #          env:
+      #            ECHO_LOG: this is log
+
+      - name: 'Checkout codes'
+        # 1.引用公共存储库中的操作
+        # 必须使用{owner}/{repo}@{ref}
+        # 或语法引用该操作{owner}/{repo}/{path}@{ref}
+        # 2.在工作流文件使用动作的同一存储库中引用
+        #        uses: ./.github/actions/xxx
+        uses: actions/checkout@v2
+
+      - name: 'Setup JDK 1.8'
+        uses: actions/setup-java@v1
+        with:
+          java-version: '1.8'
+
+      - name: 'Build channel release apk with gradle'
+        run: ./gradlew assembleRelease
+
+      - name: 'upload damai channel apk'
+        uses: actions/upload-artifact@v2
+        with:
+          name: emmagee-damai-release
+          path: app/build/outputs/apk/damai/release/
+
+      - name: 'upload other channel apk'
+        uses: actions/upload-artifact@v2
+        with:
+          name: emmagee-other-release
+          path: app/build/outputs/apk/other/release/
+
+      - name: 'Publish to bintray with gradle'
+        run: ./gradlew build bintrayUpload -PbintrayUser=$PBINTRAYUSER -PbintrayApiKey=$PBINTRAYAPIKEY
