@@ -1,0 +1,78 @@
+apply plugin: 'com.android.application'
+def static buildTime() {
+    return new Date().format("yyyyMMddHHmm", TimeZone.getTimeZone("GMT+08"))
+}
+android {
+    compileSdkVersion 28
+    buildToolsVersion "29.0.3"
+    aaptOptions.cruncherEnabled = false
+    aaptOptions.useNewCruncher = false
+
+    defaultConfig {
+        applicationId "com.netease.qa.emmagee"
+        minSdkVersion 19
+        targetSdkVersion 22
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    flavorDimensions "device"
+    productFlavors {
+        //大麦盒子
+        damai {
+            dimension "device"
+            versionCode 1
+            versionName "1.0"
+        }
+        //其他设备
+        other {
+            dimension "device"
+            versionCode 1
+            versionName "1.0"
+        }
+    }
+
+    applicationVariants.all { variant ->
+        def type = variant.buildType.name
+        def channel = variant.flavorName
+
+        // 设置输出apk名称
+        variant.outputs.all {
+            //格式：应用名称_v版本名称（+版本后缀）_打包日期_targetSdkVersion_productFlavors_buildType.apk
+            outputFileName = "Emmagee_v${variant.versionName}_${buildTime()}" +
+                    "_target${defaultConfig.targetSdkVersion.apiLevel}_${channel}_${type}.apk"
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation 'com.github.yhaolpz:FloatWindow:1.0.9'
+
+    implementation rootProject.ext.dependencies["appcompat_v7"]
+    implementation rootProject.ext.dependencies["support_annotations"]
+    implementation rootProject.ext.dependencies["recyclerview"]
+    implementation rootProject.ext.dependencies["constraintlayout"]
+
+    implementation rootProject.ext.dependencies["rxjava2"]
+    implementation rootProject.ext.dependencies["rxandroid2"]
+
+    implementation files('libs/activation.jar')
+    implementation files('libs/additionnal.jar')
+    implementation files('libs/commons-io-2.5.jar')
+    implementation files('libs/mail.jar')
+
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+}
