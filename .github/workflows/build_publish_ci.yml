@@ -1,4 +1,4 @@
-name: 'JFramework CI'
+name: 'Emmagee CI'
 
 # 定义脚本触发方式
 on:
