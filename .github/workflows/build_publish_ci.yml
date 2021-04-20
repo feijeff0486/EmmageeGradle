@@ -74,6 +74,3 @@ jobs:
         with:
           name: emmagee-other-release
           path: app/build/outputs/apk/other/release/
-
-      - name: 'Publish to bintray with gradle'
-        run: ./gradlew build bintrayUpload -PbintrayUser=$PBINTRAYUSER -PbintrayApiKey=$PBINTRAYAPIKEY
